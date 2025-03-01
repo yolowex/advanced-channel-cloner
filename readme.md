@@ -14,7 +14,7 @@ In the same directory you run the application from create a file called `.env` w
 ```
 API_ID: Your Telegram API ID
 API_HASH: Your Telegram API Hash
-MON_CHANNEL: The ID of the channel to monitor and forward messages from
+SOURCE_CHANNEL: The ID of the channel to monitor and forward messages from
 TARGET_CHANNEL: The ID of the channel to forward messages to
 ```
 
@@ -22,10 +22,10 @@ TARGET_CHANNEL: The ID of the channel to forward messages to
 
 `API_ID` and `API_HASH` can be obtained by creating a Telegram application at https://my.telegram.org/apps
 
-`MON_CHANNEL` and `TARGET_CHANNEL` can be obtained by forwarding a message to @jsondumpbot and getting the `chat_id`
+`SOURCE_CHANNEL` and `TARGET_CHANNEL` can be obtained by forwarding a message to @jsondumpbot and getting the `chat_id`
 from the JSON response that is related to the channel.
 
-> `MON_CHANNEL` is the channel you are monitoring for new messages.
+> `SOURCE_CHANNEL` is the channel you are monitoring for new messages.
 
 > `TARGET_CHANNEL` is the channel you are forwarding messages to. (Your own channel)
 

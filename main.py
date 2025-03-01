@@ -11,10 +11,10 @@ from pyrogram.types import InputMediaPhoto
 load_dotenv()
 api_id = os.getenv("API_ID")
 api_hash = os.getenv("API_HASH")
-mon_channel = os.getenv("MON_CHANNEL")
-source_channel = os.getenv("TARGET_CHANNEL")
+source_channel = os.getenv("SOURCE_CHANNEL")
+target_channel = os.getenv("TARGET_CHANNEL")
 
-if not api_id or not api_hash or not mon_channel or not source_channel:
+if not api_id or not api_hash or not source_channel or not target_channel:
     typer.echo("Please set the environment variables")
     # exit on pressing enter
     try:
@@ -24,8 +24,8 @@ if not api_id or not api_hash or not mon_channel or not source_channel:
         exit(1)
 else:
     try:
-        mon_channel = int(mon_channel)
         source_channel = int(source_channel)
+        target_channel = int(target_channel)
     except TypeError:
         typer.echo("Please set the environment variables correctly")
         try:
@@ -79,7 +79,7 @@ async def forward_media_group(message):
             photo_obj = InputMediaPhoto(photo)
             v_media_group.append(photo_obj)
         logging.info("Sending media group")
-        await app.send_media_group(source_channel, v_media_group)
+        await app.send_media_group(target_channel, v_media_group)
         print("Sent media group")
         v_media_group.clear()
 
@@ -102,74 +102,74 @@ async def handle_media(message):
 
         for option in message.poll.options:
             options.append(option.text)
-        await app.send_poll(source_channel, question=message.poll.question, options=options, is_anonymous=is_anonymous)
+        await app.send_poll(target_channel, question=message.poll.question, options=options, is_anonymous=is_anonymous)
         return
 
     if message.sticker:
         sticker = await app.download_media(message, in_memory=True)
-        await app.send_sticker(source_channel, sticker)
+        await app.send_sticker(target_channel, sticker)
         return
 
     if message.video:
         video = await app.download_media(message, in_memory=True)
-        await app.send_video(source_channel, video)
+        await app.send_video(target_channel, video)
         return
 
     if message.audio:
         audio = await app.download_media(message, in_memory=True)
-        await app.send_audio(source_channel, audio)
+        await app.send_audio(target_channel, audio)
         return
 
     if message.voice:
         voice = await app.download_media(message, in_memory=True)
-        await app.send_voice(source_channel, voice)
+        await app.send_voice(target_channel, voice)
         return
 
     if message.animation:
         animation = await app.download_media(message, in_memory=True)
-        await app.send_animation(source_channel, animation)
+        await app.send_animation(target_channel, animation)
         return
 
     if message.document:
         document = await app.download_media(message, in_memory=True)
-        await app.send_document(source_channel, document)
+        await app.send_document(target_channel, document)
         return
 
     if message.contact:
-        await app.send_contact(source_channel, message.contact.phone_number, message.contact.first_name)
+        await app.send_contact(target_channel, message.contact.phone_number, message.contact.first_name)
         return
 
     if message.location:
-        await app.send_location(source_channel, message.location.latitude, message.location.longitude)
+        await app.send_location(target_channel, message.location.latitude, message.location.longitude)
         return
 
     if message.venue:
-        await app.send_venue(source_channel, message.venue.location.latitude, message.venue.location.longitude,
+        await app.send_venue(target_channel, message.venue.location.latitude, message.venue.location.longitude,
                              message.venue.title, message.venue.address)
         return
 
     if message.game:
-        await app.send_game(source_channel, message.game.title)
+        await app.send_game(target_channel, message.game.title)
         return
 
     if message.video_note:
         video_note = await app.download_media(message, in_memory=True)
-        await app.send_video_note(source_channel, video_note)
+        await app.send_video_note(target_channel, video_note)
         return
 
     if message.dice:
-        await app.send_dice(source_channel, message.dice.emoji)
+        await app.send_dice(target_channel, message.dice.emoji)
         return
 
     if message.photo:
         logging.info("Downloading media")
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
-        await app.send_photo(source_channel, photo)
+        await app.send_photo(target_channel, photo)
         return
 
 
-@app.on_message(filters.chat(int(mon_channel)))
+@app.on_message(filters.chat(int(source_channel)))
 async def hello(client, message):
     if message.media_group_id:
         logging.info("Media group detected")
@@ -180,7 +180,7 @@ async def hello(client, message):
         await handle_media(message)
 
     else:
-        await app.send_message(source_channel, message.text)
+        await app.send_message(target_channel, message.text)
 
 
 app.run()
