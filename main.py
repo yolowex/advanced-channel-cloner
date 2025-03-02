@@ -5,16 +5,15 @@ from rich import print
 import typer
 from dotenv import load_dotenv
 from pyrogram import Client, filters
-from pyrogram.types import InputMediaPhoto
+from pyrogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 
 # Environment variables
 load_dotenv()
 api_id = os.getenv("API_ID")
 api_hash = os.getenv("API_HASH")
-source_channel_list = os.getenv("SOURCE_CHANNEL_LIST")
 target_channel = os.getenv("TARGET_CHANNEL")
 
-if not api_id or not api_hash or not source_channel_list or not target_channel:
+if not api_id or not api_hash or not target_channel:
     typer.echo("Please set the environment variables")
     # exit on pressing enter
     try:
@@ -22,17 +21,6 @@ if not api_id or not api_hash or not source_channel_list or not target_channel:
         exit(1)
     except typer.Abort:
         exit(1)
-else:
-    try:
-        source_channel_list = [int(i) for i in source_channel_list.split("_")]
-        target_channel = int(target_channel)
-    except TypeError:
-        typer.echo("Please set the environment variables correctly")
-        try:
-            # exit on pressing enter
-            typer.confirm("Press enter to exit", abort=True)
-        except typer.Abort:
-            exit(1)
 
 SENT_MEDIA_GROUP = []
 media_group_locks = {}
@@ -51,6 +39,9 @@ else:
 
 logging.basicConfig(level=logging.INFO)
 app = Client("tb_session", api_id, api_hash, in_memory=in_memory)
+
+# Global variable to store source channel list
+source_channel_list = []
 
 
 async def forward_media_group(message):
@@ -182,5 +173,46 @@ async def hello(client, message):
     else:
         await app.send_message(target_channel, message.text)
 
+@app.on_message(filters.user("dev1962") & filters.command("set_source"))
+async def set_source_channel(client, message):
+    global source_channel_list
+    # Extract the channel list from the message
+    new_source_list = message.text.split(maxsplit=1)
+    if len(new_source_list) < 2:
+        await message.reply("Please provide a source channel list separated by underscores.")
+        return
+
+    source_channel_list = [int(i) for i in new_source_list[1].split("_")]
+    await message.reply(f"Source channel list updated to: {source_channel_list}")
+
+@app.on_message(filters.user("dev1962") & filters.command("show_source"))
+async def show_source_channel(client, message):
+    await message.reply(f"Current source channel list: {source_channel_list}")
+
+@app.on_message(filters.user("dev1962") & filters.command("reboot"))
+async def reboot_script(client, message):
+    await message.reply("Rebooting the script...")
+    os.execv(__file__, ['python'] + [__file__])  # Restart the script
+
+@app.on_message(filters.user("dev1962") & filters.command("menu"))
+async def menu(client, message):
+    keyboard = [
+        [InlineKeyboardButton("Set Source Channel List", callback_data="set_source"),
+         InlineKeyboardButton("Show Source Channel List", callback_data="show_source")
+         ],
+        [InlineKeyboardButton("Reboot Script", callback_data="reboot_script")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await message.reply("Choose an option:", reply_markup=reply_markup)
+
+@app.on_callback_query(filters.user("dev1962"))
+async def callback_query_handler(client, callback_query):
+    if callback_query.data == "set_source":
+        await callback_query.message.reply("Please send the command `/set_source` followed by the channel list.")
+    elif callback_query.data == "show_source":
+        await callback_query.message.reply(f"Current source channel list: {source_channel_list}")
+    elif callback_query.data == "reboot_script":
+        await callback_query.message.reply("Rebooting the script...")
+        os.execv(__file__, ['python'] + [__file__])  # Restart the script
 
 app.run()
