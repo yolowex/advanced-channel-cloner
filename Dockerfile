@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir poetry
 COPY pyproject.toml poetry.lock ./
 
 # Install the dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install
 
 # Copy the rest of the application code into the container
 COPY . .
