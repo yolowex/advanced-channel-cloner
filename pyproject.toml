@@ -6,7 +6,7 @@ authors = ["fauzaanu <fauzaangasim@gmail.com>","yolowex <yolowex@gmail.com"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10.0"
+python = "^3.9.0"
 python-dotenv = "^1.0.0"
 tgcrypto = "^1.2.5"
 pyrofork = "^2.3.16.post5"
