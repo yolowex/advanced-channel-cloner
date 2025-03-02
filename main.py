@@ -11,10 +11,10 @@ from pyrogram.types import InputMediaPhoto
 load_dotenv()
 api_id = os.getenv("API_ID")
 api_hash = os.getenv("API_HASH")
-source_channel = os.getenv("SOURCE_CHANNEL")
+source_channel_list = os.getenv("SOURCE_CHANNEL_LIST")
 target_channel = os.getenv("TARGET_CHANNEL")
 
-if not api_id or not api_hash or not source_channel or not target_channel:
+if not api_id or not api_hash or not source_channel_list or not target_channel:
     typer.echo("Please set the environment variables")
     # exit on pressing enter
     try:
@@ -24,7 +24,7 @@ if not api_id or not api_hash or not source_channel or not target_channel:
         exit(1)
 else:
     try:
-        source_channel = int(source_channel)
+        source_channel_list = [int(i) for i in source_channel_list.split("_")]
         target_channel = int(target_channel)
     except TypeError:
         typer.echo("Please set the environment variables correctly")
@@ -169,7 +169,7 @@ async def handle_media(message):
         return
 
 
-@app.on_message(filters.chat(int(source_channel)))
+@app.on_message(filters.chat(source_channel_list))
 async def hello(client, message):
     if message.media_group_id:
         logging.info("Media group detected")

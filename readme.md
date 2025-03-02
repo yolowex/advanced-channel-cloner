@@ -37,3 +37,8 @@ Currently supports simply between two channels. (Because I made this for a speci
 - [ ] Add support for multiple channels
 - [ ] UI ?
 - [ ] Improve CLI
+
+## UPDATE
+support for multiple source channels is added.
+simply concatenate the chat_id of all source channels with _ as a seperator in .env file
+( with SOURCE_CHANNEL_LIST env variable)
