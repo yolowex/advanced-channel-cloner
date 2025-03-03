@@ -57,43 +57,20 @@ async def handle_media(message):
     :param message: The message containing the media
      :type message: pyrogram.types.Message
     """
-    message_text = message.text if message.text is not None else ""
-    logging.info(message_text)
+    message_caption = message.caption if message.caption is not None else ""
+    logging.info(message_caption)
 
-    # if message.poll:
-
-    # if message.sticker:
 
     if message.video:
         video = await app.download_media(message, in_memory=True)
-        await app.send_video(target_channel, video, caption=message_text, caption_entities=message.entities, )
+        await app.send_video(target_channel, video, caption=message_caption, caption_entities=message.caption_entities, )
         return
-
-    # if message.audio:
-
-    # if message.voice:
-
-    # if message.animation:
-
-    # if message.document:
-
-    # if message.contact:
-
-    # if message.location:
-
-    # if message.venue:
-
-    # if message.game:
-
-    # if message.video_note:
-
-    # if message.dice:
 
     if message.photo:
         logging.info("Downloading media")
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
-        await app.send_photo(target_channel, photo, caption=message_text, caption_entities=message.entities,)
+        await app.send_photo(target_channel, photo, caption=message_caption, caption_entities=message.caption_entities,)
         return
 
 
@@ -104,7 +81,7 @@ async def hello(client, message):
         await handle_media(message)
 
     else:
-        await app.send_message(target_channel, message.text)
+        await app.send_message(target_channel, message.text,entities=message.entities)
 
 
 app.run()
