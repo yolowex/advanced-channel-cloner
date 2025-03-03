@@ -58,21 +58,23 @@ async def handle_media(message):
      :type message: pyrogram.types.Message
     """
     message_caption = message.caption if message.caption is not None else ""
-    logging.info(message_caption)
-
 
     if message.video:
         video = await app.download_media(message, in_memory=True)
         await app.send_video(target_channel, video, caption=message_caption, caption_entities=message.caption_entities, )
         return
 
-    if message.photo:
+    elif message.photo:
         logging.info("Downloading media")
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
         await app.send_photo(target_channel, photo, caption=message_caption, caption_entities=message.caption_entities,)
         return
 
+    else:
+        logging.warning(f"undistinguished message type thrown to else! {message}")
+        await app.send_message(target_channel, message.text,entities=message.entities)
+        return
 
 @app.on_message(filters.chat(source_channel_list))
 async def hello(client, message):
