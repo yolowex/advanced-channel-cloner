@@ -58,7 +58,7 @@ async def handle_media(message):
      :type message: pyrogram.types.Message
     """
     message_text = message.text if message.text is not None else ""
-    print(message_text)
+    logging.info(message_text)
 
     # if message.poll:
 
