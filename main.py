@@ -53,6 +53,17 @@ logging.basicConfig(level=logging.INFO)
 app = Client("tb_session", api_id, api_hash, in_memory=in_memory)
 
 
+def replace_links(entities: list[pyrogram.types.MessageEntity]):
+    nl = []
+    for entity in entities:
+        ne = entity
+        if ne.url:
+            ne.url = replacement_link
+        nl.append(ne)
+
+    return nl
+
+
 async def handle_media(message):
     """
     This function handles different types of media in a message and forwards them to the source channel.
@@ -65,7 +76,7 @@ async def handle_media(message):
     if message.video:
         video = await app.download_media(message, in_memory=True)
         await app.send_video(target_channel, video, caption=message_caption,
-                             caption_entities=message.caption_entities, )
+                             caption_entities=replace_links(message.caption_entities), )
         return
 
     elif message.photo:
@@ -73,23 +84,13 @@ async def handle_media(message):
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
         await app.send_photo(target_channel, photo, caption=message_caption,
-                             caption_entities=message.caption_entities, )
+                             caption_entities=replace_links(message.caption_entities), )
         return
 
     else:
         logging.warning(f"undistinguished message type thrown to else!")
-        await app.send_message(target_channel, message.text, entities=message.entities)
+        await app.send_message(target_channel, message.text, entities=replace_links(message.entities))
         return
-
-
-def replace_links(entities: list[pyrogram.types.MessageEntity]):
-    nl = []
-    for entity in entities:
-        ne = entity
-        ne.url = replacement_link
-        nl.append(ne)
-
-    return nl
 
 
 @app.on_message(filters.chat(source_channel_list))
