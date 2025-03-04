@@ -67,6 +67,17 @@ def modify_entities(entities: list[pyrogram.types.MessageEntity]):
     return nl
 
 
+
+def modify_text(text: str):
+    def fun(v:str):
+        if v.startswith("@"):
+            v = replacement_username
+        return v
+
+    x = [fun(i) for i in text.split(" ")]
+    return " ".join(x)
+
+
 async def handle_media(message):
     """
     This function handles different types of media in a message and forwards them to the source channel.
@@ -78,7 +89,7 @@ async def handle_media(message):
 
     if message.video:
         video = await app.download_media(message, in_memory=True)
-        await app.send_video(target_channel, video, caption=message_caption,
+        await app.send_video(target_channel, video, caption=modify_text(message_caption, ),
                              caption_entities=modify_entities(message.caption_entities), )
         return
 
@@ -86,13 +97,13 @@ async def handle_media(message):
         logging.info("Downloading media")
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
-        await app.send_photo(target_channel, photo, caption=message_caption,
+        await app.send_photo(target_channel, photo, caption=modify_text(message_caption, ),
                              caption_entities=modify_entities(message.caption_entities), )
         return
 
     else:
         logging.warning(f"undistinguished message type thrown to else!")
-        await app.send_message(target_channel, message.text, entities=modify_entities(message.entities))
+        await app.send_message(target_channel, modify_text(message.text, ), entities=modify_entities(message.entities))
         return
 
 
@@ -103,7 +114,8 @@ async def hello(client, message):
         await handle_media(message)
 
     else:
-        await app.send_message(target_channel, message.text, entities=modify_entities(message.entities, ))
+        await app.send_message(target_channel, modify_text(message.text, ),
+                               entities=modify_entities(message.entities, ))
 
 
 app.run()
