@@ -71,7 +71,7 @@ def modify_entities(entities: list[pyrogram.types.MessageEntity]):
 def modify_text(text: str):
     def fun(v:str):
         if v.startswith("@"):
-            v = replacement_username
+            v = "@"+replacement_username
         return v
 
     x = [fun(i) for i in text.split(" ")]
