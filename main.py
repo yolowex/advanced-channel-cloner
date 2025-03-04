@@ -16,6 +16,7 @@ api_hash = os.getenv("API_HASH")
 source_channel_list = os.getenv("SOURCE_CHANNEL_LIST")
 target_channel = os.getenv("TARGET_CHANNEL")
 replacement_link = os.getenv("REPLACEMENT_LINK")
+replacement_username = os.getenv("REPLACEMENT_USERNAME")
 
 if not api_id or not api_hash or not source_channel_list or not target_channel:
     typer.echo("Please set the environment variables")
@@ -53,12 +54,14 @@ logging.basicConfig(level=logging.INFO)
 app = Client("tb_session", api_id, api_hash, in_memory=in_memory)
 
 
-def replace_links(entities: list[pyrogram.types.MessageEntity]):
+def modify_entities(entities: list[pyrogram.types.MessageEntity]):
     nl = []
     for entity in entities:
         ne = entity
         if ne.url:
             ne.url = replacement_link
+        if ne.user:
+            ne.user.username = replacement_username
         nl.append(ne)
 
     return nl
@@ -76,7 +79,7 @@ async def handle_media(message):
     if message.video:
         video = await app.download_media(message, in_memory=True)
         await app.send_video(target_channel, video, caption=message_caption,
-                             caption_entities=replace_links(message.caption_entities), )
+                             caption_entities=modify_entities(message.caption_entities), )
         return
 
     elif message.photo:
@@ -84,12 +87,12 @@ async def handle_media(message):
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
         await app.send_photo(target_channel, photo, caption=message_caption,
-                             caption_entities=replace_links(message.caption_entities), )
+                             caption_entities=modify_entities(message.caption_entities), )
         return
 
     else:
         logging.warning(f"undistinguished message type thrown to else!")
-        await app.send_message(target_channel, message.text, entities=replace_links(message.entities))
+        await app.send_message(target_channel, message.text, entities=modify_entities(message.entities))
         return
 
 
@@ -100,7 +103,7 @@ async def hello(client, message):
         await handle_media(message)
 
     else:
-        await app.send_message(target_channel, message.text, entities=replace_links(message.entities, ))
+        await app.send_message(target_channel, message.text, entities=modify_entities(message.entities, ))
 
 
 app.run()
