@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+
+import pyrogram.types
 from rich import print
 import typer
 from dotenv import load_dotenv
@@ -13,6 +15,7 @@ api_id = os.getenv("API_ID")
 api_hash = os.getenv("API_HASH")
 source_channel_list = os.getenv("SOURCE_CHANNEL_LIST")
 target_channel = os.getenv("TARGET_CHANNEL")
+replacement_link = os.getenv("REPLACEMENT_LINK")
 
 if not api_id or not api_hash or not source_channel_list or not target_channel:
     typer.echo("Please set the environment variables")
@@ -61,20 +64,33 @@ async def handle_media(message):
 
     if message.video:
         video = await app.download_media(message, in_memory=True)
-        await app.send_video(target_channel, video, caption=message_caption, caption_entities=message.caption_entities, )
+        await app.send_video(target_channel, video, caption=message_caption,
+                             caption_entities=message.caption_entities, )
         return
 
     elif message.photo:
         logging.info("Downloading media")
         photo = await app.download_media(message, in_memory=True)
         logging.info("Sending media")
-        await app.send_photo(target_channel, photo, caption=message_caption, caption_entities=message.caption_entities,)
+        await app.send_photo(target_channel, photo, caption=message_caption,
+                             caption_entities=message.caption_entities, )
         return
 
     else:
-        logging.warning(f"undistinguished message type thrown to else! {message}")
-        await app.send_message(target_channel, message.text,entities=message.entities)
+        logging.warning(f"undistinguished message type thrown to else!")
+        await app.send_message(target_channel, message.text, entities=message.entities)
         return
+
+
+def replace_links(entities: list[pyrogram.types.MessageEntity]):
+    nl = []
+    for entity in entities:
+        ne = entity
+        ne.url = replacement_link
+        nl.append(ne)
+
+    return nl
+
 
 @app.on_message(filters.chat(source_channel_list))
 async def hello(client, message):
@@ -83,7 +99,7 @@ async def hello(client, message):
         await handle_media(message)
 
     else:
-        await app.send_message(target_channel, message.text,entities=message.entities)
+        await app.send_message(target_channel, message.text, entities=replace_links(message.entities, ))
 
 
 app.run()
